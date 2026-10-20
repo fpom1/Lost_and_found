@@ -1,0 +1,75 @@
+
+[
+  {
+    "id": 1,
+    "name": "Blue Backpack",
+    "category": "Bags",
+    "dateFound": "2026-10-18",
+    "location": "Main Library",
+    "image": "images/Png.webp",
+    "description": "A blue backpack found near the library entrance."
+  },
+  {
+    "id": 2,
+    "name": "Set of Keys",
+    "category": "Accessories",
+    "dateFound": "2026-10-17",
+    "location": "Student Center",
+    "image": "images/fly.png",
+    "description": "A set of keys found on a table in the student center."
+  },
+  {
+    "id": 3,
+    "name": "Water Bottle",
+    "category": "Personal Items",
+    "dateFound": "2026-10-16",
+    "location": "Gym",
+    "image": "",
+    "description": "A reusable water bottle left in the gym."
+  },
+  {
+    "id": 4,
+    "name": "Black Wallet",
+    "category": "Accessories",
+    "dateFound": "2026-10-15",
+    "location": "Parking Lot B",
+    "image": "",
+    "description": "A black wallet found in parking lot B."
+  },
+  {
+    "id": 5,
+    "name": "Wireless Earbuds",
+    "category": "Electronics",
+    "dateFound": "2026-10-14",
+    "location": "Lecture Hall 2",
+    "image": "",
+    "description": "A pair of wireless earbuds found after class."
+  },
+  {
+    "id": 6,
+    "name": "Gray Hoodie",
+    "category": "Clothing",
+    "dateFound": "2026-10-13",
+    "location": "Cafeteria",
+    "image": "",
+    "description": "A gray hoodie found on a cafeteria chair."
+  },
+  {
+    "id": 7,
+    "name": "Student Notebook",
+    "category": "School Supplies",
+    "dateFound": "2026-10-12",
+    "location": "Science Building",
+    "image": "",
+    "description": "A notebook found outside a classroom."
+  },
+  {
+    "id": 8,
+    "name": "Silver Water Bottle",
+    "category": "Personal Items",
+    "dateFound": "2026-10-11",
+    "location": "Sports Field",
+    "image": "",
+    "description": "A silver bottle found beside the sports field."
+  }
+]

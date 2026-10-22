@@ -292,7 +292,6 @@ function filterItems() {
     return matchesKeyword && matchesCategory;
   });
 
-  showingAll = true;
   renderItems(filteredItems);
 }
 

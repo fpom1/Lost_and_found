@@ -36,7 +36,7 @@ async function loadItems() {
     '<p class="loading-message">Loading found items...</p>';
 
   try {
-    const response = await fetch("./items.json", {
+    const response = await fetch("items.json", {
       cache: "no-store"
     });
 

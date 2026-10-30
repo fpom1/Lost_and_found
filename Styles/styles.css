@@ -60,14 +60,22 @@ select:focus-visible {
 
 /* Header */
 
+
+/* Header */
+
 header {
     background: var(--green);
     color: var(--cream);
     border-bottom: 2px solid var(--green-light);
 }
 
-header inner {
+/* Correctly target the container inside the header */
+header .container.inner {
+    width: min(var(--container-width), calc(100% - 100px));
+    max-width: var(--container-width);
     min-height: 57px;
+    margin-inline: auto;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -103,7 +111,7 @@ header inner {
 }
 
 .brand-mark::after {
-    background: var(--green-light)
+    background: var(--green-light);
 }
 
 .site-name {
@@ -158,6 +166,8 @@ header inner {
     margin: 4px 0;
     background: var(--cream);
 }
+
+
 
 /* Hero */
 
@@ -226,7 +236,7 @@ header inner {
     text-align: center;
     text-decoration: none;
     cursor: pointer;
-    transition: background 160ms ease, color 160ms ease;
+    transition: background 200ms ease, color 200ms ease;
 }
 
 .button-dark {
@@ -235,7 +245,7 @@ header inner {
 }
 
 .button-dark:hover {
-    background: var(--green-dark);
+    background: var(--green);
 }
 
 .button-light {
@@ -522,8 +532,8 @@ h2 {
 
 footer {
     background: var(--green-light);
-    padding: 20px;
     min-height: 59px;
+    padding-inline: 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -542,7 +552,13 @@ footer nav {
     gap: 18px;
 }
 
-footer nav a {
+footer a {
+    margin-left: 0;
     color: var(--green-dark);
     font-size: 12px;
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
 }

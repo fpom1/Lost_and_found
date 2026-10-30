@@ -15,7 +15,9 @@ let allItems = [];
 let showingAll = false;
 
 // Update the copyright year automatically.
-currentYear.textContent = new Date().getFullYear();
+if (currentYear) {
+  currentYear.textContent = new Date().getFullYear();
+}
 
 // Mobile navigation.
 menuToggle.addEventListener("click", () => {
@@ -104,10 +106,10 @@ function formatDate(dateString) {
 
   const date = match
     ? new Date(
-        Number(match[1]),
-        Number(match[2]) - 1,
-        Number(match[3])
-      )
+      Number(match[1]),
+      Number(match[2]) - 1,
+      Number(match[3])
+    )
     : new Date(dateString);
 
   if (Number.isNaN(date.getTime())) {

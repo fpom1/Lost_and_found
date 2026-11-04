@@ -262,6 +262,8 @@ function displayPagination() {
 
     if (totalPages <= 1) return;
 
+    const maxVisible = 3;
+
     function addButton(text, page, disabled = false) {
         const button = document.createElement("button");
 
@@ -280,17 +282,35 @@ function displayPagination() {
         pagination.appendChild(button);
     }
 
+    // First page
+    addButton("<<", 1, currentPage === 1);
+
+    // Previous page
     addButton("<", currentPage - 1, currentPage === 1);
 
-    for (let page = 1; page <= totalPages; page++) {
+    // Calculate visible page range
+    let startPage = Math.max(
+        1,
+        currentPage - Math.floor(maxVisible / 2)
+    );
+
+    let endPage = startPage + maxVisible - 1;
+
+    if (endPage > totalPages) {
+        endPage = totalPages;
+        startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+
+    // Page number buttons
+    for (let page = startPage; page <= endPage; page++) {
         addButton(page, page);
     }
 
-    addButton(
-        ">",
-        currentPage + 1,
-        currentPage === totalPages
-    );
+    // Next page
+    addButton(">", currentPage + 1, currentPage === totalPages);
+
+    // Last page
+    addButton(">>", totalPages, currentPage === totalPages);
 }
 
 // Event listeners

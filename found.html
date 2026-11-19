@@ -2,133 +2,92 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Found Items | Lost & Found</title>
-    <link rel="stylesheet" href="Styles/found.css" />
-    <script src="Scripts/found.js" defer></script>
-
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#60735b" />
+    <meta name="description"
+        content="Lost something or found something? Help reunite lost belongings with their owners." />
+    <title>Report Found Item | Lost & Found</title>
+    <link rel="stylesheet" href="Styles/styles.css" />
+    <script src="Scripts/script.js" defer></script>
+    <script type="module" src="Scripts/report.js"></script>
 </head>
 
 <body>
+    <header>
+        <div class="container inner">
+            <a class="brand" href="index.html" aria-label="Lost and Found home">
+                <span class="brand-mark" aria-hidden="true"></span>
+                <span><span class="site-name">Dastardly Dinos</span> Lost & Found</span>
+            </a>
 
-    <!-- Header -->
-  <header>
-    <div class="container inner">
-      <a class="brand" href="index.html" aria-label="Lost and Found home">
-        <img class ="brand-mark" src="images/Logo.png">
-        <span><span class="site-name">Dastardly Dinos</span> Lost & Found</span>
-      </a>
-
-      <button class="menu-toggle" id="menuToggle"
-        aria-label="Toggle navigation" aria-expanded="false"
-        aria-controls="mainNav">
-        <span></span><span></span><span></span>
-      </button>
-      <nav class="main-nav" id="mainNav" aria-label="Main navigation">
-        <a href="index.html">Home</a>
-        <a href="report.html">Report Lost Item</a>
-        <a class="active" href="found.html">Found Items</a>
-        <a href="instructions.html">How to Claim</a>
-        <a href="about.html">About / Contact / FAQ</a>
-      </nav>
-    </div>
-  </header>
-
-    <!-- Main content yo-->
-    <main class="container">
-
-        <div class="page-heading">
-            <h1>Found items</h1>
-            <div class="heading-line"></div>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false"
+                aria-controls="mainNav">
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="main-nav" id="mainNav" aria-label="Main navigation">
+                <a href="index.html">Home</a>
+                <a class="active" href="report.html">Report Lost Item</a>
+                <a href="found.html">Found Items</a>
+                <a href="instructions.html">How to Claim</a>
+                <a href="#footer">About / Contact / FAQ</a>
+            </nav>
         </div>
+    </header>
 
-        <div class="found-layout">
+    <main>
+        <section class="hero">
+            <div class="container hero-inner" style="min-height: auto; grid-template-columns: 1fr;">
+                <div class="hero-copy">
+                    <span class="eyebrow">SUBMIT A FOUND ITEM</span>
+                    <h1 style="margin-bottom: 12px;">Report an Item You Found</h1>
+                    <p style="margin: 0; max-width: 540px;">
+                        Provide clear details and a photo so the owner can identify and claim their belongings.
+                    </p>
+                </div>
+            </div>
+        </section>
 
-            <!-- Filters -->
-            <aside class="filters">
-
-                <div class="filter-heading">
-                    <h2>Filters</h2>
-                    <button id="clearFilters" type="button">
-                        Clear all
-                    </button>
+        <section class="container content-section">
+            <form id="reportForm" class="report-form">
+                <div class="form-group">
+                    <label for="itemName">Item Name *</label>
+                    <input type="text" id="itemName" name="itemName" placeholder="e.g., Blue Hydro Flask, Car Keys" required />
                 </div>
 
-                <h3>Category</h3>
-
-                <div id="categoryFilters"></div>
-
-                <label for="locationFilter">
-                    Location found
-                </label>
-
-                <select id="locationFilter">
-                    <option value="">Any location</option>
-                </select>
-
-                <label for="dateAfter">Found after</label>
-                <input type="date" id="dateAfter">
-
-                <label for="dateBefore">Found before</label>
-                <input type="date" id="dateBefore">
-
-                <button id="applyFilters" class="apply-button" type="button">
-                    Apply filters
-                </button>
-
-            </aside>
-
-            <!-- Results -->
-            <section class="results">
-
-                <div class="search-row">
-
-                    <input type="search" id="searchInput" placeholder="Search found items"
-                        aria-label="Search found items">
-
-                    <label for="sortSelect">Sort by</label>
-
-                    <select id="sortSelect">
-                        <option value="newest">Newest first</option>
-                        <option value="oldest">Oldest first</option>
-                        <option value="az">Name A-Z</option>
-                        <option value="za">Name Z-A</option>
-                    </select>
-
+                <div class="form-group">
+                    <label for="itemLocation">Location Found *</label>
+                    <input type="text" id="itemLocation" name="itemLocation" placeholder="e.g., Library 2nd Floor, Main Quad Bench" required />
                 </div>
 
-                <p id="itemCount" aria-live="polite">
-                    Loading items...
-                </p>
-
-                <div id="itemsGrid" class="items-grid"></div>
-
-                <div id="pagination" class="pagination"></div>
-
-                <div class="report-banner">
-                    <p>Don't see your item?</p>
-                    <a href="report.html">
-                        Report a lost item
-                    </a>
+                <div class="form-group">
+                    <label for="itemDescription">Description *</label>
+                    <textarea id="itemDescription" name="itemDescription" rows="4"
+                        placeholder="Include color, brand, unique stickers, scratches, or condition..." required></textarea>
                 </div>
 
-            </section>
+                <div class="form-group">
+                    <label for="itemImage">Upload Photo *</label>
+                    <input type="file" id="itemImage" name="itemImage" accept="image/*" required />
+                    <div id="imagePreviewContainer" class="image-preview" hidden>
+                        <img id="imagePreview" alt="Selected item preview" />
+                    </div>
+                </div>
 
-        </div>
+                <div class="form-actions">
+                    <button type="submit" id="submitBtn" class="button button-dark">Submit Report</button>
+                    <p id="formStatus" class="form-status" role="status" aria-live="polite"></p>
+                </div>
+            </form>
+        </section>
     </main>
 
-    <!-- Footer -->
-<footer id="footer">
-    <p>&copy; <span id="currentYear"></span> Dastardly Dinos</p>
-
-    <nav aria-label="Footer navigation">
-        <a href="instructions.html">Contact</a>
-        <a href="instructions.html">FAQ</a>
-        <a href="instructions.html">Claim policy</a>
-    </nav>
-</footer>
-
+    <footer id="footer">
+        <p>© <span id="currentYear"></span> Dastardly Dinos</p>
+        <nav aria-label="Footer navigation">
+            <a href="mailto:lostandfound@email.com">Contact</a>
+            <a href="#how-it-works">FAQ</a>
+            <a href="#how-it-works">Claim policy</a>
+        </nav>
+    </footer>
 </body>
-
-</html>

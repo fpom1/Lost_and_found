@@ -471,3 +471,89 @@ footer a {
 footer a:hover {
     text-decoration: underline;
 }
+
+/* Report Form */
+
+textarea {
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+textarea:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 3px;
+}
+
+.report-form {
+  max-width: 640px;
+  padding: 24px;
+  background: white;
+  border: 1.5px solid var(--green-dark);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--green-dark);
+}
+
+.form-group input[type="text"],
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  background: var(--cream);
+  color: var(--green-dark);
+  border: 1px solid var(--green);
+  border-radius: 0;
+}
+
+.form-group input[type="file"] {
+  padding: 8px;
+  background: var(--cream);
+  border: 1px dashed var(--green);
+  cursor: pointer;
+}
+
+.image-preview {
+  margin-top: 8px;
+  max-width: 260px;
+  border: 1px solid var(--green-light);
+  background: var(--cream);
+}
+
+.image-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.form-actions .button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-status {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.form-status.error {
+  color: #9e2a2b;
+}

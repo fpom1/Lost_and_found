@@ -1,18 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#60735b" />
-    <meta name="description"
-        content="Lost something or found something? Help reunite lost belongings with their owners." />
-    <title>Lost & Found</title>
-    <link rel="stylesheet" href="Styles/styles.css" />
-    <script src="Scripts/script.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lost & Found | Submit an Item</title>
+  <link rel="stylesheet" href="Styles/report.css">
 </head>
 
 <body>
+
   <header>
     <div class="container inner">
       <a class="brand" href="index.html" aria-label="Lost and Found home">
@@ -35,19 +31,107 @@
     </div>
   </header>
 
-    <main>
-        <p>
-            REPORT PAGE
-        </p>
-    </main>
-    <footer id="footer">
-        <p>© <span id="currentYear"></span> Dastardly Dinos</p>
-        <nav aria-label="Footer navigation">
-            <a href="mailto:lostandfound@email.com">Contact</a>
-            <a href="#how-it-works">FAQ</a>
-            <a href="#how-it-works">Claim policy</a>
-        </nav>
-    </footer>
-</body>
+  <main class="container">
 
+    <section class="intro">
+      <h2>Lost something? Found something?</h2>
+      <p>Help reunite lost belongings with their owners by sharing an item below.</p>
+    </section>
+
+    <section class="form-section" id="submit">
+
+      <div class="section-heading">
+        <h2>Submit an Item</h2>
+        <p>Provide some details about the item you're reporting.</p>
+      </div>
+
+      <form id="itemForm">
+
+        <div class="form-group">
+          <label>Is this item lost or found?</label>
+
+          <div class="type-options">
+            <label class="type-option">
+              <input type="radio" name="type" value="Lost" checked>
+              <span>Lost Item</span>
+            </label>
+
+            <label class="type-option">
+              <input type="radio" name="type" value="Found">
+              <span>Found Item</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="image">Item Photograph</label>
+
+          <label class="upload-area" for="image">
+            <div class="upload-content">
+              <span class="upload-icon">+</span>
+              <strong>Upload an image</strong>
+              <span>Click to browse your files</span>
+              <small>PNG, JPG or JPEG</small>
+            </div>
+            <input type="file" id="image" accept="image/*">
+          </label>
+
+          <img id="imagePreview" alt="Image preview">
+        </div>
+
+        <div class="form-group">
+          <label for="title">Item Title</label>
+          <input
+            type="text"
+            id="title"
+            placeholder="e.g. Black wallet, silver water bottle..."
+            maxlength="100"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea
+            id="description"
+            placeholder="Describe the item, including identifying details..."
+            maxlength="2000"
+            required
+          ></textarea>
+        </div>
+
+        <button type="submit" class="submit-button">
+          Submit Item
+        </button>
+
+      </form>
+    </section>
+
+    <section class="listings-section" id="listings">
+      <div class="section-heading">
+        <h2>Recent Listings</h2>
+        <p>Recently reported lost and found items.</p>
+      </div>
+
+      <div id="listingContainer" class="listing-container">
+        <p class="empty-message">
+          No listings to display yet.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+     <p>© <span id="currentYear"></span> Dastardly Dinos</p>
+      <nav aria-label="Footer navigation">
+        <a href="mailto:lostandfound@email.com">Contact</a>
+        <a href="#how-it-works">FAQ</a>
+        <a href="#how-it-works">Claim policy</a>
+      </nav>
+  </footer>
+
+  
+
+</body>
 </html>

@@ -194,7 +194,7 @@ h2 {
 .about {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
-  gap: 35px;
+  gap: 100px;
   align-items: center;
   padding: 0 0 23px;
 }

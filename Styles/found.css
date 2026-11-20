@@ -257,10 +257,15 @@ header .container.inner {
     width: 100%;
     margin-top: 20px;
     padding: 12px;
-    background: var(--green);
-    color: white;
+    background: var(--green-dark);
+    color: var(--cream);
     border: none;
     cursor: pointer;
+}
+
+
+.apply-button:hover {
+    background: var(--green);
 }
 
 /* Search and sorting */

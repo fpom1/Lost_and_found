@@ -1,340 +1,192 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+    getFirestore,
+    collection,
+    getDocs,
+    query,
+    orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBL2X7zEf8jSZfp-HqDEfYHLk0uNoIN3wo",
+    authDomain: "lostandfoundbyui.firebaseapp.com",
+    projectId: "lostandfoundbyui",
+    storageBucket: "lostandfoundbyui.firebasestorage.app",
+    messagingSenderId: "143800285299",
+    appId: "1:143800285299:web:fda665f590118a593e5206",
+    measurementId: "G-Q50FBT6DZP"
+};
+
+// Initialize Firebase & Firestore
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// DOM Elements
 const itemsGrid = document.getElementById("itemsGrid");
 const itemCount = document.getElementById("itemCount");
-const pagination = document.getElementById("pagination");
-
 const searchInput = document.getElementById("searchInput");
 const sortSelect = document.getElementById("sortSelect");
-const locationFilter = document.getElementById("locationFilter");
-const dateAfter = document.getElementById("dateAfter");
-const dateBefore = document.getElementById("dateBefore");
-const categoryFilters = document.getElementById("categoryFilters");
 
 let allItems = [];
-let filteredItems = [];
-let currentPage = 1;
 
-const itemsPerPage = 6;
-
-// Update the copyright year automatically.
-if (currentYear) {
-  currentYear.textContent = new Date().getFullYear();
-}
-
-// Load data from items.json
-async function loadItems() {
-    try {
-        const response = await fetch("items.json");
-
-        if (!response.ok) {
-            throw new Error("Could not load items.json");
-        }
-
-        const data = await response.json();
-
-        allItems = Array.isArray(data) ? data : data.items;
-
-        if (!Array.isArray(allItems)) {
-            throw new Error("Invalid items.json format");
-        }
-
-        setupFilters();
-        applyFilters();
-
-    } catch (error) {
-        console.error(error);
-        itemCount.textContent = "Unable to load found items.";
+// Format Firestore timestamp into readable date
+function formatDate(timestamp) {
+    if (!timestamp || typeof timestamp.toDate !== "function") {
+        return "Recently reported";
     }
+    return timestamp.toDate().toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+    });
 }
 
-// Set up category and location filters
-function setupFilters() {
-    const categories = [...new Set(
-        allItems.map(item => item.category).filter(Boolean)
-    )].sort();
+// Build a single card element safely using DOM methods
+function createItemCard(item) {
+    const card = document.createElement("article");
+    card.className = "item-card";
 
-    categories.forEach(category => {
-        const label = document.createElement("label");
-        label.className = "category-option";
+    if (item.imageUrl) {
+        const img = document.createElement("img");
+        img.className = "item-image";
+        img.src = item.imageUrl;
+        img.alt = item.name || "Found item photo";
+        img.loading = "lazy";
+        card.appendChild(img);
+    } else {
+        const placeholder = document.createElement("div");
+        placeholder.className = "item-placeholder";
+        placeholder.textContent = "No Photo Provided";
+        card.appendChild(placeholder);
+    }
 
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.value = category;
-        checkbox.name = "category";
+    const details = document.createElement("div");
+    details.className = "item-details";
 
-        label.append(
-            checkbox,
-            document.createTextNode(category)
+    const meta = document.createElement("div");
+    meta.className = "item-meta";
+
+    const statusBadge = document.createElement("span");
+    statusBadge.className = "item-status";
+    statusBadge.textContent = item.status || "unclaimed";
+
+    const dateSpan = document.createElement("span");
+    dateSpan.className = "item-date";
+    dateSpan.textContent = formatDate(item.createdAt);
+
+    meta.append(statusBadge, dateSpan);
+
+    const title = document.createElement("h3");
+    title.textContent = item.name || "Unnamed Item";
+
+    const location = document.createElement("p");
+    location.className = "item-location";
+    location.textContent = `Found at: ${item.location || "Unknown location"}`;
+
+    const description = document.createElement("p");
+    description.className = "item-description";
+    description.textContent = item.description || "No description provided.";
+
+    const claimLink = document.createElement("a");
+    claimLink.className = "claim-button";
+    claimLink.href = `instructions.html?item=${encodeURIComponent(item.id)}`;
+    claimLink.textContent = "How to Claim This Item";
+
+    details.append(meta, title, location, description, claimLink);
+    card.appendChild(details);
+
+    return card;
+}
+
+// Filter, sort, and render cards
+function renderItems() {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const sortBy = sortSelect.value;
+
+    let filtered = allItems.filter((item) => {
+        const name = (item.name || "").toLowerCase();
+        const location = (item.location || "").toLowerCase();
+        const description = (item.description || "").toLowerCase();
+        return (
+            name.includes(searchTerm) ||
+            location.includes(searchTerm) ||
+            description.includes(searchTerm)
         );
-
-        categoryFilters.appendChild(label);
     });
 
-    const locations = [...new Set(
-        allItems.map(item => item.location).filter(Boolean)
-    )].sort();
-
-    locations.forEach(location => {
-        const option = document.createElement("option");
-        option.value = location;
-        option.textContent = location;
-        locationFilter.appendChild(option);
-    });
-}
-
-// Apply search, filters and sorting
-function applyFilters() {
-    const search = searchInput.value.toLowerCase().trim();
-
-    const selectedCategories = [
-        ...categoryFilters.querySelectorAll("input:checked")
-    ].map(checkbox => checkbox.value);
-
-    filteredItems = allItems.filter(item => {
-        const name = String(item.name || "");
-        const location = String(item.location || "");
-        const category = String(item.category || "");
-        const date = String(item.dateFound || "");
-
-        const matchesSearch =
-            name.toLowerCase().includes(search) ||
-            location.toLowerCase().includes(search) ||
-            category.toLowerCase().includes(search);
-
-        const matchesCategory =
-            selectedCategories.length === 0 ||
-            selectedCategories.includes(category);
-
-        const matchesLocation =
-            !locationFilter.value ||
-            location === locationFilter.value;
-
-        const matchesAfter =
-            !dateAfter.value ||
-            date >= dateAfter.value;
-
-        const matchesBefore =
-            !dateBefore.value ||
-            date <= dateBefore.value;
-
-        return matchesSearch &&
-            matchesCategory &&
-            matchesLocation &&
-            matchesAfter &&
-            matchesBefore;
+    filtered.sort((a, b) => {
+        if (sortBy === "name") {
+            return (a.name || "").localeCompare(b.name || "");
+        }
+        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return sortBy === "oldest" ? timeA - timeB : timeB - timeA;
     });
 
-    switch (sortSelect.value) {
-        case "newest":
-            filteredItems.sort((a, b) =>
-                String(b.dateFound || "").localeCompare(
-                    String(a.dateFound || "")
-                )
-            );
-            break;
-
-        case "oldest":
-            filteredItems.sort((a, b) =>
-                String(a.dateFound || "").localeCompare(
-                    String(b.dateFound || "")
-                )
-            );
-            break;
-
-        case "az":
-            filteredItems.sort((a, b) =>
-                String(a.name || "").localeCompare(
-                    String(b.name || "")
-                )
-            );
-            break;
-
-        case "za":
-            filteredItems.sort((a, b) =>
-                String(b.name || "").localeCompare(
-                    String(a.name || "")
-                )
-            );
-            break;
-    }
-
-    currentPage = 1;
-    displayItems();
-}
-
-// Create item cards
-function displayItems() {
     itemsGrid.innerHTML = "";
 
-    itemCount.textContent =
-        `Showing ${filteredItems.length} items`;
-
-    const start = (currentPage - 1) * itemsPerPage;
-
-    const pageItems = filteredItems.slice(
-        start,
-        start + itemsPerPage
-    );
-
-    if (pageItems.length === 0) {
-        itemsGrid.textContent = "No matching items found.";
+    if (filtered.length === 0) {
+        itemCount.textContent = "Showing 0 items";
+        const emptyBox = document.createElement("div");
+        emptyBox.className = "empty-state";
+        emptyBox.textContent = allItems.length === 0
+            ? "No found items have been reported yet."
+            : "No items matched your search.";
+        itemsGrid.appendChild(emptyBox);
+        return;
     }
 
-    pageItems.forEach(item => {
-        const card = document.createElement("article");
-        card.className = "item-card";
+    itemCount.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? "item" : "items"}`;
 
-        // Image
-        if (item.image) {
-            const image = document.createElement("img");
-            image.className = "item-image";
-            image.src = item.image;
-            image.alt = item.name || "Found item";
-            image.loading = "lazy";
-
-            image.onerror = () => {
-                const placeholder = document.createElement("div");
-                placeholder.className =
-                    "item-image item-placeholder";
-                placeholder.textContent = "Item photo";
-                image.replaceWith(placeholder);
-            };
-
-            card.appendChild(image);
-        } else {
-            const placeholder = document.createElement("div");
-            placeholder.className =
-                "item-image item-placeholder";
-            placeholder.textContent = "Item photo";
-            card.appendChild(placeholder);
-        }
-
-        // Item details
-        const details = document.createElement("div");
-        details.className = "item-details";
-
-        const category = document.createElement("span");
-        category.className = "item-category";
-        category.textContent = item.category || "Other";
-
-        const name = document.createElement("h3");
-        name.textContent = item.name || "Unnamed item";
-
-        const date = document.createElement("p");
-        date.textContent =
-            `Found: ${item.dateFound || "Unknown"}`;
-
-        const location = document.createElement("p");
-        location.textContent =
-            `Where: ${item.location || "Unknown"}`;
-
-        const id = document.createElement("p");
-        id.textContent = `ID: #${item.id ?? "N/A"}`;
-
-        const claim = document.createElement("a");
-        claim.className = "claim-button";
-        claim.href =
-            `instructions.html?item=${encodeURIComponent(item.id ?? "")}`;
-        claim.textContent = "Claim this item";
-
-        details.append(
-            category,
-            name,
-            date,
-            location,
-            id,
-            claim
-        );
-
-        card.appendChild(details);
-        itemsGrid.appendChild(card);
+    const fragment = document.createDocumentFragment();
+    filtered.forEach((item) => {
+        fragment.appendChild(createItemCard(item));
     });
-
-    displayPagination();
+    itemsGrid.appendChild(fragment);
 }
 
-// Page buttons
-function displayPagination() {
-    pagination.innerHTML = "";
+// Fetch all documents from Firestore "foundItems" collection
+async function loadFoundItems() {
+    try {
+        const q = query(collection(db, "foundItems"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
 
-    const totalPages = Math.ceil(
-        filteredItems.length / itemsPerPage
-    );
+        allItems = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data()
+        }));
 
-    if (totalPages <= 1) return;
+        renderItems();
+    } catch (error) {
+        console.error("Error loading found items:", error);
+        itemCount.textContent = "Unable to load items";
+        itemsGrid.innerHTML = "";
 
-    const maxVisible = 3;
-
-    function addButton(text, page, disabled = false) {
-        const button = document.createElement("button");
-
-        button.textContent = text;
-        button.disabled = disabled;
-
-        if (page === currentPage && !disabled) {
-            button.classList.add("active");
-        }
-
-        button.addEventListener("click", () => {
-            currentPage = page;
-            displayItems();
-        });
-
-        pagination.appendChild(button);
+        const errorBox = document.createElement("div");
+        errorBox.className = "empty-state error";
+        errorBox.textContent = `Error loading items (${error.code || "unknown"}): ${error.message}`;
+        itemsGrid.appendChild(errorBox);
     }
-
-    // First page
-    addButton("<<", 1, currentPage === 1);
-
-    // Previous page
-    addButton("<", currentPage - 1, currentPage === 1);
-
-    // Calculate visible page range
-    let startPage = Math.max(
-        1,
-        currentPage - Math.floor(maxVisible / 2)
-    );
-
-    let endPage = startPage + maxVisible - 1;
-
-    if (endPage > totalPages) {
-        endPage = totalPages;
-        startPage = Math.max(1, endPage - maxVisible + 1);
-    }
-
-    // Page number buttons
-    for (let page = startPage; page <= endPage; page++) {
-        addButton(page, page);
-    }
-
-    // Next page
-    addButton(">", currentPage + 1, currentPage === totalPages);
-
-    // Last page
-    addButton(">>", totalPages, currentPage === totalPages);
 }
 
 // Event listeners
-document.getElementById("applyFilters")
-    .addEventListener("click", applyFilters);
+searchInput.addEventListener("input", renderItems);
+sortSelect.addEventListener("change", renderItems);
 
-searchInput.addEventListener("input", applyFilters);
-sortSelect.addEventListener("change", applyFilters);
+// Footer year & mobile menu toggle
+document.getElementById("currentYear").textContent = new Date().getFullYear();
 
-document.getElementById("clearFilters")
-    .addEventListener("click", () => {
-        searchInput.value = "";
-        locationFilter.value = "";
-        dateAfter.value = "";
-        dateBefore.value = "";
-        sortSelect.value = "newest";
+const menuToggle = document.getElementById("menuToggle");
+const mainNav = document.getElementById("mainNav");
 
-        categoryFilters.querySelectorAll("input")
-            .forEach(checkbox => {
-                checkbox.checked = false;
-            });
-
-        applyFilters();
+if (menuToggle && mainNav) {
+    menuToggle.addEventListener("click", () => {
+        const isOpen = mainNav.classList.toggle("open");
+        menuToggle.setAttribute("aria-expanded", String(isOpen));
     });
+}
 
-// Start
-loadItems();
+// Initial fetch
+loadFoundItems();
+
+export {}

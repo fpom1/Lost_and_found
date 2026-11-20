@@ -1,6 +1,27 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-"use strict";
+const firebaseConfig = {
+  apiKey: "AIzaSyBL2X7zEf8jSZfp-HqDEfYHLk0uNoIN3wo",
+  authDomain: "lostandfoundbyui.firebaseapp.com",
+  projectId: "lostandfoundbyui",
+  storageBucket: "lostandfoundbyui.firebasestorage.app",
+  messagingSenderId: "143800285299",
+  appId: "1:143800285299:web:fda665f590118a593e5206",
+  measurementId: "G-Q50FBT6DZP"
+};
 
+// Initialize Firebase & Firestore
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// DOM Elements
 const itemsGrid = document.getElementById("itemsGrid");
 const searchForm = document.getElementById("searchForm");
 const keywordInput = document.getElementById("keyword");
@@ -14,50 +35,60 @@ const mainNav = document.getElementById("mainNav");
 let allItems = [];
 let showingAll = false;
 
-// Update the copyright year automatically.
+// Update the copyright year automatically
 if (currentYear) {
   currentYear.textContent = new Date().getFullYear();
 }
 
-// Mobile navigation.
-menuToggle.addEventListener("click", () => {
-  const isOpen = mainNav.classList.toggle("open");
-  menuToggle.setAttribute("aria-expanded", String(isOpen));
-});
-
-mainNav.querySelectorAll("a").forEach((link) => {
-  link.addEventListener("click", () => {
-    mainNav.classList.remove("open");
-    menuToggle.setAttribute("aria-expanded", "false");
+// Mobile navigation
+if (menuToggle && mainNav) {
+  menuToggle.addEventListener("click", () => {
+    const isOpen = mainNav.classList.toggle("open");
+    menuToggle.setAttribute("aria-expanded", String(isOpen));
   });
-});
 
-// Load the separate JSON data file.
+  mainNav.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      mainNav.classList.remove("open");
+      menuToggle.setAttribute("aria-expanded", "false");
+    });
+  });
+}
+
+// Normalize Firestore document fields for display and filtering
+function normalizeItem(doc) {
+  const data = doc.data();
+  const timestampMs =
+    data.createdAt && typeof data.createdAt.toMillis === "function"
+      ? data.createdAt.toMillis()
+      : 0;
+
+  const rawTag = data.category || data.status || "Unclaimed";
+  const formattedTag =
+    rawTag.charAt(0).toUpperCase() + rawTag.slice(1).toLowerCase();
+
+  return {
+    id: doc.id,
+    name: typeof data.name === "string" ? data.name : "Unnamed Item",
+    location: typeof data.location === "string" ? data.location : "",
+    description: typeof data.description === "string" ? data.description : "",
+    imageUrl: typeof data.imageUrl === "string" ? data.imageUrl : "",
+    category: formattedTag,
+    createdAt: data.createdAt || null,
+    timestampMs
+  };
+}
+
+// Load found items from Firestore
 async function loadItems() {
   itemsGrid.innerHTML =
     '<p class="loading-message">Loading found items...</p>';
 
   try {
-    const response = await fetch("items.json", {
-      cache: "no-store"
-    });
+    const q = query(collection(db, "foundItems"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
 
-    if (!response.ok) {
-      throw new Error(`Could not load items.json (${response.status})`);
-    }
-
-    const data = await response.json();
-
-    if (!Array.isArray(data)) {
-      throw new Error("items.json must contain a JSON array.");
-    }
-
-    allItems = data.filter(
-      (item) =>
-        item &&
-        typeof item.name === "string" &&
-        typeof item.category === "string"
-    );
+    allItems = snapshot.docs.map(normalizeItem);
 
     populateCategories();
     renderItems(allItems);
@@ -66,8 +97,7 @@ async function loadItems() {
 
     itemsGrid.innerHTML = `
       <p class="error-message">
-        Unable to load found items. Make sure items.json exists
-        and you're running the site through a local web server.
+        Unable to load found items (${error.code || "error"}): ${error.message}
       </p>
     `;
   }
@@ -97,23 +127,17 @@ function populateCategories() {
   });
 }
 
-// Format dates without displaying invalid dates.
-function formatDate(dateString) {
-  if (!dateString) return "Date unknown";
+// Format Firestore Timestamp or Date safely
+function formatDate(timestamp) {
+  if (!timestamp) return "Recently";
 
-  // Parse date-only values as local calendar dates.
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
-
-  const date = match
-    ? new Date(
-      Number(match[1]),
-      Number(match[2]) - 1,
-      Number(match[3])
-    )
-    : new Date(dateString);
+  const date =
+    typeof timestamp.toDate === "function"
+      ? timestamp.toDate()
+      : new Date(timestamp);
 
   if (Number.isNaN(date.getTime())) {
-    return "Date unknown";
+    return "Recently";
   }
 
   return new Intl.DateTimeFormat("en", {
@@ -123,7 +147,7 @@ function formatDate(dateString) {
   }).format(date);
 }
 
-// Create an item card using DOM methods.
+// Create an item card using DOM methods
 function createItemCard(item) {
   const article = document.createElement("article");
   article.className = "item-card";
@@ -142,9 +166,9 @@ function createItemCard(item) {
   imageLabel.textContent = "Item photo";
   imageContainer.appendChild(imageLabel);
 
-  if (typeof item.image === "string" && item.image.trim()) {
+  if (item.imageUrl.trim()) {
     const img = document.createElement("img");
-    img.src = item.image;
+    img.src = item.imageUrl;
     img.alt = item.name;
     img.loading = "lazy";
 
@@ -165,7 +189,7 @@ function createItemCard(item) {
 
   const metadata = document.createElement("p");
   metadata.textContent =
-    `Found ${formatDate(item.dateFound)} · ${item.location || "Location unavailable"}`;
+    `Found ${formatDate(item.createdAt)} · ${item.location || "Location unavailable"}`;
   metadata.title = metadata.textContent;
 
   const category = document.createElement("span");
@@ -183,9 +207,9 @@ function createItemCard(item) {
   return article;
 }
 
-// item's details.
+// Show item details modal when a card is clicked
 function showItemDetails(item) {
-  const date = formatDate(item.dateFound);
+  const date = formatDate(item.createdAt);
   const description = item.description || "No additional details available.";
   const location = item.location || "Location unavailable";
 
@@ -195,11 +219,11 @@ function showItemDetails(item) {
   const heading = document.createElement("h2");
   heading.textContent = item.name;
 
-  const category = document.createElement("p");
-  category.textContent = `Category: ${item.category}`;
+  const statusText = document.createElement("p");
+  statusText.textContent = `Status: ${item.category}`;
 
   const foundDate = document.createElement("p");
-  foundDate.textContent = `Date found: ${date}`;
+  foundDate.textContent = `Date reported: ${date}`;
 
   const foundLocation = document.createElement("p");
   foundLocation.textContent = `Location: ${location}`;
@@ -215,7 +239,7 @@ function showItemDetails(item) {
 
   dialog.append(
     heading,
-    category,
+    statusText,
     foundDate,
     foundLocation,
     itemDescription,
@@ -231,15 +255,11 @@ function showItemDetails(item) {
   dialog.showModal();
 }
 
-// Render listings. newest first. four visible by default.
+// Render listings (newest first, 4 visible by default)
 function renderItems(items) {
   itemsGrid.replaceChildren();
 
-  const sortedItems = [...items].sort((a, b) => {
-    const dateA = Date.parse(a.dateFound || "") || 0;
-    const dateB = Date.parse(b.dateFound || "") || 0;
-    return dateB - dateA;
-  });
+  const sortedItems = [...items].sort((a, b) => b.timestampMs - a.timestampMs);
 
   const visibleItems = showingAll
     ? sortedItems
@@ -248,8 +268,9 @@ function renderItems(items) {
   if (visibleItems.length === 0) {
     const message = document.createElement("p");
     message.className = "empty-message";
-    message.textContent =
-      "No found items match your search. Try another keyword or category.";
+    message.textContent = allItems.length === 0
+      ? "No found items have been reported yet."
+      : "No found items match your search. Try another keyword.";
     itemsGrid.appendChild(message);
   } else {
     const fragment = document.createDocumentFragment();
@@ -271,7 +292,7 @@ function renderItems(items) {
     : "View all found items →";
 }
 
-// Filter by keyword and category.
+// Filter by keyword and category/status
 function filterItems() {
   const keyword = keywordInput.value.trim().toLocaleLowerCase();
   const category = categorySelect.value;
@@ -302,6 +323,7 @@ searchForm.addEventListener("submit", (event) => {
   filterItems();
 });
 
+keywordInput.addEventListener("input", filterItems);
 categorySelect.addEventListener("change", filterItems);
 
 viewAllLink.addEventListener("click", (event) => {
@@ -311,5 +333,7 @@ viewAllLink.addEventListener("click", (event) => {
   filterItems();
 });
 
-// Initialize the page.
+// Initialize the page
 loadItems();
+
+export {}
